@@ -1,4 +1,9 @@
 import { marked } from "marked"; // Or use react-markdown
+import ReactMarkdown from "react-markdown";
+import {
+  BlocksRenderer,
+  type BlocksContent,
+} from "@strapi/blocks-react-renderer";
 
 // This is the key function for SSG
 // It tells Next.js which pages to build
@@ -16,7 +21,7 @@ export async function generateStaticParams() {
 
   // We must return an array of objects like [{ slug: 'about' }, { slug: 'contact' }]
   return pages.data.map((page: any) => ({
-    slug: page.attributes.slug,
+    slug: page.slug,
   }));
 }
 
@@ -43,26 +48,21 @@ async function getPageData(slug: string) {
 
 // The Page component itself
 export default async function Page({ params }: { params: { slug: string } }) {
-  const page = await getPageData(params.slug);
+  const ppp = await params;
+
+  const page = await getPageData(ppp.slug);
 
   if (!page) {
     return <div>Page not found.</div>;
   }
 
-  const { title, content } = page.attributes;
-
-  // Use 'marked' to parse Markdown content
-  const htmlContent = marked(content || "");
+  const { Title, Content } = page;
 
   return (
     <article>
-      <h1>{title}</h1>
-      {/* This is for standard HTML output from 'marked' */}
-      <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
+      <h1>{Title}</h1>
 
-      {/* If using 'react-markdown', you would do:
-      <ReactMarkdown>{content}</ReactMarkdown>
-      */}
+      <BlocksRenderer content={Content} />
     </article>
   );
 }
